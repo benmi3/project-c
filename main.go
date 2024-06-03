@@ -16,6 +16,10 @@ type ItemInfo struct {
 }
 
 func handleInsert(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		http.Error(w, err.Error(), "Wrong Methos", http.StatusBadRequest)
+		return
+	}
 	var req Item
 	err := json.NewDecoder(r.Body).Decode(&req)
 	if err != nil {
@@ -47,7 +51,10 @@ func headers(w http.ResponseWriter, req *http.Request) {
 func main() {
 	http.HandleFunc("/hello", hello)
 	http.HandleFunc("/headers", headers)
-	http.HandleFunc("/insert", handleInsert).Methods("POST")
-
-	http.ListenAndServe(":8090", nil)
+	http.HandleFunc("/insert", handleInsert)
+	http.HandleFunc("/users", status(405, "GET", "POST")).Methods("PUT", "PATCH", "DELETE")
+	err := http.ListenAndServe(":8090", nil)
+	if err != nil {
+		panic(err)
+	}
 }
